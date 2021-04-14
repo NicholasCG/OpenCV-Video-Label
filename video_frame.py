@@ -172,7 +172,8 @@ class RectTracker:
             self.root.dataset.dataset_dict[self.root.current_object] = []
             self.root.dataset.classes.append(self.root.current_object)
         try:
-            self.root.tracker.track(self.root.current_object, self.root.cur_image[:, :, ::-1], [tl_x, tl_y, br_x, br_y])
+            for tracker in self.root.tracker:
+                tracker.track(self.root.current_object, self.root.cur_image[:, :, ::-1], [tl_x, tl_y, br_x, br_y])
         except Exception as e:
             print("failed initializing:", e)
             self.root.tracking = False

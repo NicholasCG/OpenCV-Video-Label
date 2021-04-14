@@ -33,7 +33,7 @@ class MainWindow:
         self.roi_br = None
 
         # tracking algorithm, set to None because the used trackers are imported later on
-        self.tracker = None
+        self.tracker = []
         self.tracker_list = []
 
         # dataset settings
@@ -136,7 +136,7 @@ class MainWindow:
         from algorithms.CMT import CMT
         from algorithms.re3 import re3_tracker
         self.tracker_list = [re3_tracker.Re3Tracker(), CMT.CMT(self)]
-        self.tracker = self.tracker_list[0]
+        self.tracker.append(self.tracker_list[0])
 
     # creates the solitaire-like video while tracking
     def solitaire_maker(self, tl_x, tl_y, br_x, br_y):
@@ -174,25 +174,27 @@ class MainWindow:
 
                 # use tracker to locate the object in the new frame
                 if self.tracking:
-                    try:
-                        [tl_x, tl_y, br_x, br_y] = self.tracker.track(self.current_object, self.cur_image[:, :, ::-1])
-                        dataset_image = dataset.DatasetImage(self.cur_image[:, :, ::1],
-                                                             self.max_image_count,
-                                                             self.current_object,
-                                                             tl_x, tl_y, br_x, br_y)
-                        # store image to dataset
-                        if self.frame_counter % self.tracking_options.get_n() == 0:
-                            successful_cropping = dataset_image.crop_and_pad_roi()
-                            if successful_cropping:
-                                self.dataset.add_image(dataset_image)
-                                self.max_image_count += 1
-                        dataset_image.draw_roi()
-                        self.frame = dataset_image.image
+                    for tracker in self.tracker:
+                        try:
+                            print(tracker)
+                            [tl_x, tl_y, br_x, br_y] = tracker.track(self.current_object, self.cur_image[:, :, ::-1])
+                            dataset_image = dataset.DatasetImage(self.cur_image[:, :, ::1],
+                                                                self.max_image_count,
+                                                                self.current_object,
+                                                                tl_x, tl_y, br_x, br_y)
+                            # store image to dataset
+                            if self.frame_counter % self.tracking_options.get_n() == 0:
+                                successful_cropping = dataset_image.crop_and_pad_roi()
+                                if successful_cropping:
+                                    self.dataset.add_image(dataset_image)
+                                    self.max_image_count += 1
+                            dataset_image.draw_roi()
+                            self.frame = dataset_image.image
 
-                    # except to catch cmt bugs
-                    except Exception as e:
-                        print(e, "in main.py at: if self.tracking:")
-                        self.tracking = False
+                        # except to catch cmt bugs
+                        except Exception as e:
+                            print(e, "in main.py at: if self.tracking:")
+                            self.tracking = False
 
                 # display the current frame on the gui
                 if self.tracking and self.solitaire_mode:

@@ -2,7 +2,8 @@
 __pycache__/
 *.py[cod]
 checkpoints/
-
+venv/
+settings.json
 # C extensions
 *.so
 
