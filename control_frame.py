@@ -23,6 +23,7 @@ class TkControlFrame(tk.Frame):
         self.play_photo = tk.PhotoImage(file="bitmaps/play.png")
         self.stop_photo = tk.PhotoImage(file="bitmaps/stop.png")
         self.track_photo = tk.PhotoImage(file="bitmaps/track.png")
+        self.delete_photo = tk.PhotoImage(file="bitmaps/delete.png")
         self.play_cycle = it.cycle([self.pause_photo, self.play_photo])
 
         # using a tkinter scale to control current location in video
@@ -46,27 +47,32 @@ class TkControlFrame(tk.Frame):
         self.trackbut.grid(button_config, column=0)
         tooltip.CreateToolTip(self.trackbut, "Toggle tracking")
 
+        # delete button
+        self.deletebut = tk.Button(self.button_panel, BUTTON_SETTINGS, command=self.video_frame.test_func, 
+                                   image=self.delete_photo)
+        self.deletebut.grid(button_config, column=1)
+        tooltip.CreateToolTip(self.deletebut, "Delete tracking")
         # play pause button
         self.playbut = tk.Button(self.button_panel, BUTTON_SETTINGS, command=self.playpause, image=self.play_photo)
-        self.playbut.grid(button_config, column=1)
+        self.playbut.grid(button_config, column=2)
         tooltip.CreateToolTip(self.playbut, "Play/pause")
 
         # playing speed decrease button
         decreasebut = tk.Button(self.button_panel, BUTTON_SETTINGS, command=self.decrease_speed,
                                 image=self.decrease_photo)
-        decreasebut.grid(button_config, column=2)
+        decreasebut.grid(button_config, column=3)
         tooltip.CreateToolTip(decreasebut, "Decrease speed")
 
         # stop button
         stopbut = tk.Button(self.button_panel, BUTTON_SETTINGS, command=self.stop)
         stopbut.config(image=self.stop_photo, height=24, width=24)
-        stopbut.grid(button_config, column=3)
+        stopbut.grid(button_config, column=4)
         tooltip.CreateToolTip(stopbut, "Stop playing")
 
         # playing speed increase button
         increasebut = tk.Button(self.button_panel, BUTTON_SETTINGS, command=self.increase_speed,
                                 image=self.increase_photo)
-        increasebut.grid(button_config, column=4)
+        increasebut.grid(button_config, column=5)
         tooltip.CreateToolTip(increasebut, "Increase speed")
 
     # spacebar pause to prevent class editing problems

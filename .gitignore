@@ -21,3 +21,6 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# Other unnecessary files
+*.mp4

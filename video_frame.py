@@ -58,13 +58,15 @@ class TkVideoFrame:
             if self.parent.solitaire_mode:
                 self.parent.solitaire_video.release()
             self.parent.control_panel.start_playing()
+
         # if already tracking, stop tracking
-        elif self.parent.tracking:
-            if self.parent.solitaire_mode:
-                self.parent.solitaire_video.release()
-            self.parent.tracking = False
-            self.parent.status_bar.set("Stopped tracking.")
-            self.parent.solitaire_image = np.zeros((VIDEO_H, VIDEO_W, 3), np.uint8)
+        # elif self.parent.tracking:
+        #     if self.parent.solitaire_mode:
+        #         self.parent.solitaire_video.release()
+        #     self.parent.tracking = False
+        #     self.parent.status_bar.set("Stopped tracking.")
+        #     self.parent.solitaire_image = np.zeros((VIDEO_H, VIDEO_W, 3), np.uint8)
+        
         # if not yet doing anything, let user select an object of interest
         elif (self.parent.frame and not self.parent.selecting_roi and self.parent.video.source != "screencapture") or (
                 self.parent.video.source == "screencapture" and self.parent.video.screen_region):
@@ -72,7 +74,7 @@ class TkVideoFrame:
                 self.parent.solitaire_video = cv2.VideoWriter(VIDEO_PATH + 'solitair_video.avi',
                                                               cv2.VideoWriter_fourcc(*'XVID'), 24,
                                                               (VIDEO_W, VIDEO_H))
-            self.parent.status_bar.set("Select your object of interest to start tracking.")
+            self.parent.status_bar.set("Select your object of interest to start tracking. case 1")
             self.parent.control_panel.pause_playing()
             self.parent.selecting_roi = True
             self.parent.tracking = True
@@ -81,8 +83,12 @@ class TkVideoFrame:
         else:
             self.rect_canvas = RectCanvas(self.frame, self.parent)
             self.parent.control_panel.pause_playing()
-            self.parent.status_bar.set("Select the region of the screen you want to watch.")
+            self.parent.status_bar.set("Select the region of the screen you want to watch. case 2")
             self.parent.selecting_roi = True
+
+        # temporary function
+    def test_func(self):
+        print("works")
 
 
 # the canvas which allows the use of RectTracker
@@ -159,6 +165,7 @@ class RectTracker:
         if br_y - tl_y == 0 or br_x - tl_x == 0:
             return
 
+        #print(self.root.roi)
         self.root.roi_tl = [tl_x, tl_y]
         self.root.roi_br = [br_x, br_y]
         self.root.roi = cv2.cvtColor(self.root.cur_image[tl_y:br_y, tl_x:br_x], cv2.COLOR_BGR2RGB)
@@ -167,15 +174,22 @@ class RectTracker:
         self.root.status_bar.clear()
 
         # set the object class to value of the entry field
-        self.root.current_object = self.root.tracking_options.get_object_class()
-        if self.root.current_object not in self.root.dataset.classes:
-            self.root.dataset.dataset_dict[self.root.current_object] = []
-            self.root.dataset.classes.append(self.root.current_object)
+        #self.root.current_object.append(self.root.tracking_options.get_object_class())
+        # if self.root.current_object in self.root.dataset.classes:
+        #     self.root.current_object += "1"
+        count = 1
+        temp_str = self.root.tracking_options.get_object_class()
+        while temp_str in self.root.dataset.classes:
+            temp_str = self.root.tracking_options.get_object_class() + "(" + str(count) + ")"
+            count += 1
+        self.root.current_object.append(temp_str)
+        if self.root.current_object[-1] not in self.root.dataset.classes:
+            self.root.dataset.dataset_dict[self.root.current_object[-1]] = []
+            self.root.dataset.classes.append(self.root.current_object[-1])
         try:
-            for tracker in self.root.tracker:
-                tracker.track(self.root.current_object, self.root.cur_image[:, :, ::-1], [tl_x, tl_y, br_x, br_y])
+            self.root.tracker.track(self.root.current_object[-1], self.root.cur_image[:, :, ::-1], [tl_x, tl_y, br_x, br_y])
         except Exception as e:
-            print("failed initializing:", e)
+            print("failed initializing in video_frame:", e)
             self.root.tracking = False
 
         self.root.control_panel.start_playing()
