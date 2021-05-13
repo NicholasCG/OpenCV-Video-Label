@@ -52,20 +52,11 @@ class TkVideoFrame:
         # if selecting region of interest, cancel region selection and continue playing
         elif self.parent.selecting_roi:
             self.parent.selecting_roi = False
-            self.parent.tracking = False
             self.rect_canvas.canvas.destroy()
             self.rect_canvas = None
             if self.parent.solitaire_mode:
                 self.parent.solitaire_video.release()
             self.parent.control_panel.start_playing()
-
-        # if already tracking, stop tracking
-        # elif self.parent.tracking:
-        #     if self.parent.solitaire_mode:
-        #         self.parent.solitaire_video.release()
-        #     self.parent.tracking = False
-        #     self.parent.status_bar.set("Stopped tracking.")
-        #     self.parent.solitaire_image = np.zeros((VIDEO_H, VIDEO_W, 3), np.uint8)
         
         # if not yet doing anything, let user select an object of interest
         elif (self.parent.frame and not self.parent.selecting_roi and self.parent.video.source != "screencapture") or (
@@ -86,9 +77,31 @@ class TkVideoFrame:
             self.parent.status_bar.set("Select the region of the screen you want to watch. case 2")
             self.parent.selecting_roi = True
 
-        # temporary function
-    def test_func(self):
-        print("works")
+    # Deletes region in the "Object class" textbox, if there is a region with that name.
+    def delete_region(self):
+        #if no video, do nothing
+        if not self.parent.video:
+            return
+
+        # if there is nothing being tracked, do nothing
+        elif not self.parent.current_object:
+            return
+
+        # Delete the region that shares the name with the current object name, if it exists.
+        temp_str = self.parent.tracking_options.get_object_class()
+        if temp_str in self.parent.current_object:
+            self.parent.current_object.remove(temp_str)
+
+        # Check if there is anything still being tracked.
+        if not self.parent.current_object:
+            self.parent.tracking = False
+
+        # If the video is paused, advance one frame to clear the selection.
+        if not self.parent.play:
+            self.parent.control_panel.start_playing()
+            self.parent.video_loop(single_frame=True)
+            self.parent.control_panel.pause_playing()
+
 
 
 # the canvas which allows the use of RectTracker
@@ -174,12 +187,9 @@ class RectTracker:
         self.root.status_bar.clear()
 
         # set the object class to value of the entry field
-        #self.root.current_object.append(self.root.tracking_options.get_object_class())
-        # if self.root.current_object in self.root.dataset.classes:
-        #     self.root.current_object += "1"
         count = 1
         temp_str = self.root.tracking_options.get_object_class()
-        while temp_str in self.root.dataset.classes:
+        while temp_str in self.root.current_object:
             temp_str = self.root.tracking_options.get_object_class() + "(" + str(count) + ")"
             count += 1
         self.root.current_object.append(temp_str)

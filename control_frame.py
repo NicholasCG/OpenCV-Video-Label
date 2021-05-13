@@ -45,13 +45,13 @@ class TkControlFrame(tk.Frame):
         self.trackbut = tk.Button(self.button_panel, BUTTON_SETTINGS, command=self.video_frame.get_rect,
                                   image=self.track_photo)
         self.trackbut.grid(button_config, column=0)
-        tooltip.CreateToolTip(self.trackbut, "Toggle tracking")
+        tooltip.CreateToolTip(self.trackbut, "Select region")
 
         # delete button
-        self.deletebut = tk.Button(self.button_panel, BUTTON_SETTINGS, command=self.video_frame.test_func, 
+        self.deletebut = tk.Button(self.button_panel, BUTTON_SETTINGS, command=self.video_frame.delete_region, 
                                    image=self.delete_photo)
         self.deletebut.grid(button_config, column=1)
-        tooltip.CreateToolTip(self.deletebut, "Delete tracking")
+        tooltip.CreateToolTip(self.deletebut, "Delete region")
         # play pause button
         self.playbut = tk.Button(self.button_panel, BUTTON_SETTINGS, command=self.playpause, image=self.play_photo)
         self.playbut.grid(button_config, column=2)
@@ -97,6 +97,7 @@ class TkControlFrame(tk.Frame):
         if self.parent.video:
             self.parent.play = True
             self.parent.tracking = False
+            self.parent.current_object = []
             self.playbut['image'] = self.play_photo
             self.parent.video.release()
             self.parent.video = None
