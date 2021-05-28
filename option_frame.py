@@ -92,7 +92,7 @@ class TkOptionFrame:
     def update_algorithm(self, _):
         index = self.algorithm_selection.curselection()[0]
         self.parent.tracking = False
-        self.parent.tracker[0] = self.parent.tracker_list[index]
+        self.parent.tracker = self.parent.tracker_list[index]
         self.parent.video_loop(True)
         self.parent.control_panel.pause_playing()
 

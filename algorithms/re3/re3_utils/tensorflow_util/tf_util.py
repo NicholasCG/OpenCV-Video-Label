@@ -8,21 +8,21 @@ def kernel_to_image(data, padsize=1, padval=0):
     # Useful for viewing purposes.
     if len(data.get_shape().as_list()) > 4:
         data = tf.squeeze(data)
-    data = tf.transpose(data, (3, 0, 1, 2))
+    data = tf.transpose(a=data, perm=(3, 0, 1, 2))
     dataShape = tuple(data.get_shape().as_list())
-    min = tf.reduce_min(tf.reshape(data, (dataShape[0], -1)), reduction_indices=1)
-    data = tf.transpose((tf.transpose(data, (1, 2, 3, 0)) - min), (3, 0, 1, 2))
-    max = tf.reduce_max(tf.reshape(data, (dataShape[0], -1)), reduction_indices=1)
-    data = tf.transpose((tf.transpose(data, (1, 2, 3, 0)) / max), (3, 0, 1, 2))
+    min = tf.reduce_min(input_tensor=tf.reshape(data, (dataShape[0], -1)), axis=1)
+    data = tf.transpose(a=(tf.transpose(a=data, perm=(1, 2, 3, 0)) - min), perm=(3, 0, 1, 2))
+    max = tf.reduce_max(input_tensor=tf.reshape(data, (dataShape[0], -1)), axis=1)
+    data = tf.transpose(a=(tf.transpose(a=data, perm=(1, 2, 3, 0)) / max), perm=(3, 0, 1, 2))
 
     n = int(np.ceil(np.sqrt(dataShape[0])))
     ndim = data.get_shape().ndims
     padding = ((0, n ** 2 - dataShape[0]), (0, padsize),
                (0, padsize)) + ((0, 0),) * (ndim - 3)
-    data = tf.pad(data, padding, mode='constant')
+    data = tf.pad(tensor=data, paddings=padding, mode='constant')
     # tile the filters into an image
     dataShape = tuple(data.get_shape().as_list())
-    data = tf.transpose(tf.reshape(data, ((n, n) + dataShape[1:])), ((0, 2, 1, 3)
+    data = tf.transpose(a=tf.reshape(data, ((n, n) + dataShape[1:])), perm=((0, 2, 1, 3)
                                                                      + tuple(range(4, ndim + 1))))
     dataShape = tuple(data.get_shape().as_list())
     data = tf.reshape(data, ((n * dataShape[1], n * dataShape[3]) + dataShape[4:]))
@@ -41,17 +41,17 @@ class empty_scope():
 
 
 def cond_scope(scope):
-    return empty_scope() if scope is None else tf.variable_scope(scope)
+    return empty_scope() if scope is None else tf.compat.v1.variable_scope(scope)
 
 
 def variable_summaries(var, scope=''):
     # Some useful stats for variables.
     if len(scope) > 0:
         scope = '/' + scope
-    with tf.name_scope('summaries' + scope):
-        mean = tf.reduce_mean(var)
+    with tf.compat.v1.name_scope('summaries' + scope):
+        mean = tf.reduce_mean(input_tensor=var)
         with tf.device('/cpu:0'):
-            tf.summary.scalar('mean', mean)
+            tf.compat.v1.summary.scalar('mean', mean)
             # tf.summary.histogram('histogram', var)
 
 
@@ -60,7 +60,7 @@ def conv_variable_summaries(var, scope=''):
     variable_summaries(var, scope)
     if len(scope) > 0:
         scope = '/' + scope
-    with tf.name_scope('conv_summaries' + scope):
+    with tf.compat.v1.name_scope('conv_summaries' + scope):
         varShape = var.get_shape().as_list()
         if not (varShape[0] == 1 and varShape[1] == 1):
             if varShape[2] < 3:
@@ -71,7 +71,7 @@ def conv_variable_summaries(var, scope=''):
                     var, [0, 0, 0, 0], [varShape[0], varShape[1], 3, varShape[3]])),
                 0)
             with tf.device('/cpu:0'):
-                tf.summary.image('filters', summary_image)
+                tf.compat.v1.summary.image('filters', summary_image)
 
 
 def conv(input, kernel, biases, stride_w, stride_h, padding, num_groups=1):
@@ -79,7 +79,7 @@ def conv(input, kernel, biases, stride_w, stride_h, padding, num_groups=1):
     '''
     From https://github.com/ethereon/caffe-tensorflow
     '''
-    convolve = lambda i, k: tf.nn.conv2d(i, k, [1, stride_h, stride_w, 1], padding=padding)
+    convolve = lambda i, k: tf.nn.conv2d(input=i, filters=k, strides=[1, stride_h, stride_w, 1], padding=padding)
     if num_groups == 1:
         conv = convolve(input, kernel)
     else:
@@ -92,7 +92,8 @@ def conv(input, kernel, biases, stride_w, stride_h, padding, num_groups=1):
 
 
 def get_variable(name, shape, dtype=tf.float32, initializer=None, summary=True):
-    var = tf.get_variable(name, shape, dtype=dtype, initializer=initializer)
+    shape = [int(s) for s in shape]
+    var = tf.compat.v1.get_variable(name, shape, dtype=dtype, initializer=initializer)
     if summary:
         variable_summaries(var, name)
     return var
@@ -101,9 +102,9 @@ def get_variable(name, shape, dtype=tf.float32, initializer=None, summary=True):
 def fc_layer(input, num_channels, activation=tf.nn.relu,
              weights_initializer=None, bias_initializer=None, return_vars=False, summary=True):
     if weights_initializer is None:
-        weights_initializer = tf.contrib.layers.xavier_initializer()
+        weights_initializer = tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform")
     if bias_initializer is None:
-        bias_initializer = tf.zeros_initializer()
+        bias_initializer = tf.compat.v1.zeros_initializer()
     input_shape = input.get_shape().as_list()
     if len(input_shape) > 2:
         input = tf.reshape(input, [-1, np.prod(input_shape[1:])])
@@ -137,9 +138,9 @@ def conv_layer(input, num_filters, filter_size, stride=1, num_groups=1, padding=
     else:
         raise Exception('stride is not int or tuple')
     if weights_initializer is None:
-        weights_initializer = tf.contrib.layers.xavier_initializer()
+        weights_initializer = tf.compat.v1.keras.initializers.VarianceScaling(scale=1.0, mode="fan_avg", distribution="uniform")
     if bias_initializer is None:
-        bias_initializer = tf.zeros_initializer()
+        bias_initializer = tf.compat.v1.zeros_initializer()
     shape = [filter_width, filter_height, input.get_shape().as_list()[3] / num_groups, num_filters]
     with cond_scope(scope):
         W_conv = get_variable('W_conv', shape, initializer=weights_initializer, summary=summary)
@@ -156,28 +157,28 @@ def conv_layer(input, num_filters, filter_size, stride=1, num_groups=1, padding=
 
 
 def leaky_relu(input, slope=0.01, name='lrelu'):
-    with tf.variable_scope(name):
+    with tf.compat.v1.variable_scope(name):
         return tf.nn.relu(input) - slope * tf.nn.relu(-input)
 
 
 def prelu(input, weights, name='prelu'):
-    with tf.variable_scope(name):
+    with tf.compat.v1.variable_scope(name):
         return tf.nn.relu(input) - weights * tf.nn.relu(-input)
 
 
 def restore(session, save_file, raise_if_not_found=False):
     if not os.path.exists(save_file) and raise_if_not_found:
         raise Exception('File %s not found' % save_file)
-    reader = tf.train.NewCheckpointReader(save_file)
+    reader = tf.compat.v1.train.NewCheckpointReader(save_file)
     saved_shapes = reader.get_variable_to_shape_map()
-    var_names = sorted([(var.name, var.name.split(':')[0]) for var in tf.global_variables()
+    var_names = sorted([(var.name, var.name.split(':')[0]) for var in tf.compat.v1.global_variables()
                         if var.name.split(':')[0] in saved_shapes])
-    var_name_to_var = {var.name: var for var in tf.global_variables()}
+    var_name_to_var = {var.name: var for var in tf.compat.v1.global_variables()}
     restore_vars = []
     restored_var_names = set()
     restored_var_new_shape = []
     # print('Restoring:')
-    with tf.variable_scope(tf.get_variable_scope(), reuse=True):
+    with tf.compat.v1.variable_scope(tf.compat.v1.get_variable_scope(), reuse=True):
         for var_name, saved_var_name in var_names:
             if 'global_step' in var_name:
                 restored_var_names.add(saved_var_name)
@@ -204,7 +205,7 @@ def restore(session, save_file, raise_if_not_found=False):
     #     # print('Did not restore:' + '\n\t'.join(ignored_var_names))
 
     if len(restore_vars) > 0:
-        saver = tf.train.Saver(restore_vars)
+        saver = tf.compat.v1.train.Saver(restore_vars)
         saver.restore(session, save_file)
 
     '''
@@ -253,7 +254,7 @@ def remove_axis_get_shape(curr_shape, axis):
 
 
 def remove_axis(input, axis):
-    tensor_shape = tf.shape(input)
+    tensor_shape = tf.shape(input=input)
     curr_shape = input.get_shape().as_list()
     curr_shape = [ss if ss is not None else tensor_shape[ii] for ii, ss in enumerate(curr_shape)]
     if type(axis) == int:
@@ -265,4 +266,4 @@ def remove_axis(input, axis):
 
 
 def Session():
-    return tf.Session(config=tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True, per_process_gpu_memory_fraction=0.9), allow_soft_placement=True))
+    return tf.compat.v1.Session(config=tf.compat.v1.ConfigProto(gpu_options=tf.compat.v1.GPUOptions(allow_growth=True, per_process_gpu_memory_fraction=0.9), allow_soft_placement=True))

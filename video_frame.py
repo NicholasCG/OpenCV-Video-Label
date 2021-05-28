@@ -4,6 +4,7 @@ import numpy as np
 from PIL import Image, ImageTk
 from constants import VIDEO_BACKGROUND_IMG, VIDEO_H, VIDEO_W, VIDEO_PATH, GUI_RED
 
+import os, psutil
 
 # frame which holds the video frames
 class TkVideoFrame:
@@ -202,4 +203,6 @@ class RectTracker:
             print("failed initializing in video_frame:", e)
             self.root.tracking = False
 
+        process = psutil.Process(os.getpid())
+        print(process.memory_info().rss)
         self.root.control_panel.start_playing()

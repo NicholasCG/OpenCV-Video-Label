@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-class CaffeLSTMCell(tf.contrib.rnn.RNNCell):
+class CaffeLSTMCell(tf.compat.v1.nn.rnn_cell.RNNCell):
 
   def __init__(self, num_units,
                initializer=None,
@@ -17,7 +17,7 @@ class CaffeLSTMCell(tf.contrib.rnn.RNNCell):
     self._initializer = initializer
     self._activation = activation
 
-    self._state_size = tf.contrib.rnn.LSTMStateTuple(num_units, num_units)
+    self._state_size = tf.nn.rnn_cell.LSTMStateTuple(num_units, num_units)
     self._output_size = num_units
 
   @property
@@ -49,7 +49,7 @@ class CaffeLSTMCell(tf.contrib.rnn.RNNCell):
         static shape inference.
     """
 
-    with tf.variable_scope('LSTM'):
+    with tf.compat.v1.variable_scope('LSTM'):
 
       (cell_state_prev, cell_outputs_prev) = state
       dtype = inputs.dtype
@@ -60,30 +60,30 @@ class CaffeLSTMCell(tf.contrib.rnn.RNNCell):
       peephole_concat = tf.concat([lstm_concat, cell_state_prev], axis=1)
       peephole_shape = peephole_concat.get_shape().as_list()[1]
 
-      with tf.variable_scope('block_input'):
-        weights = tf.get_variable('weights',
+      with tf.compat.v1.variable_scope('block_input'):
+        weights = tf.compat.v1.get_variable('weights',
                 shape=[inputs_shape, self._num_units],
                 dtype=dtype, initializer=self._initializer)
-        biases = tf.get_variable('biases', shape=[self._num_units], dtype=dtype,
-                initializer=tf.zeros_initializer())
+        biases = tf.compat.v1.get_variable('biases', shape=[self._num_units], dtype=dtype,
+                initializer=tf.compat.v1.zeros_initializer())
         block_input = self._activation(tf.matmul(lstm_concat, weights) + biases)
 
-      with tf.variable_scope('input_gate'):
-        weights = tf.get_variable('weights',
+      with tf.compat.v1.variable_scope('input_gate'):
+        weights = tf.compat.v1.get_variable('weights',
                 shape=[peephole_shape, self._num_units],
                 dtype=dtype, initializer=self._initializer)
-        biases = tf.get_variable('biases', shape=[self._num_units], dtype=dtype,
-                initializer=tf.zeros_initializer())
+        biases = tf.compat.v1.get_variable('biases', shape=[self._num_units], dtype=dtype,
+                initializer=tf.compat.v1.zeros_initializer())
         input_gate = tf.nn.sigmoid(tf.matmul(peephole_concat, weights) + biases)
 
         input_mult = input_gate * block_input
 
-      with tf.variable_scope('forget_gate'):
-        weights = tf.get_variable('weights',
+      with tf.compat.v1.variable_scope('forget_gate'):
+        weights = tf.compat.v1.get_variable('weights',
                 shape=[peephole_shape, self._num_units],
                 dtype=dtype, initializer=self._initializer)
-        biases = tf.get_variable('biases', shape=[self._num_units], dtype=dtype,
-                initializer=tf.ones_initializer())
+        biases = tf.compat.v1.get_variable('biases', shape=[self._num_units], dtype=dtype,
+                initializer=tf.compat.v1.ones_initializer())
         forget_gate = tf.nn.sigmoid(tf.matmul(peephole_concat, weights) + biases)
 
         forget_mult = forget_gate * cell_state_prev
@@ -91,18 +91,18 @@ class CaffeLSTMCell(tf.contrib.rnn.RNNCell):
         cell_state_new = input_mult + forget_mult
         cell_state_activated = self._activation(cell_state_new)
 
-      with tf.variable_scope('output_gate'):
+      with tf.compat.v1.variable_scope('output_gate'):
         output_concat = tf.concat([lstm_concat, cell_state_new], axis=1)
         output_concat_shape = output_concat.get_shape().as_list()[1]
-        weights = tf.get_variable('weights',
+        weights = tf.compat.v1.get_variable('weights',
                 shape=[output_concat_shape, self._num_units],
                 dtype=dtype, initializer=self._initializer)
-        biases = tf.get_variable('biases', shape=[self._num_units], dtype=dtype,
-                initializer=tf.zeros_initializer())
+        biases = tf.compat.v1.get_variable('biases', shape=[self._num_units], dtype=dtype,
+                initializer=tf.compat.v1.zeros_initializer())
         output_gate = tf.nn.sigmoid(tf.matmul(output_concat, weights) + biases)
 
         cell_outputs_new = output_gate * cell_state_activated
 
-    new_state = tf.contrib.rnn.LSTMStateTuple(cell_state_new, cell_outputs_new)
+    new_state = tf.nn.rnn_cell.LSTMStateTuple(cell_state_new, cell_outputs_new)
     return cell_outputs_new, new_state
 

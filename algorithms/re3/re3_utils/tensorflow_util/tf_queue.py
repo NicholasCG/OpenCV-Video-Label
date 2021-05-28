@@ -22,7 +22,7 @@ class TFQueue(object):
 
         # Set up queue and operations
         with tf.device('/cpu:0'):
-            self.queue = tf.FIFOQueue(self.max_queue_size,
+            self.queue = tf.queue.FIFOQueue(self.max_queue_size,
                     [placeholder.dtype for placeholder in self.placeholders],
                     shapes=[placeholder.get_shape().as_list()[1:] for placeholder in self.placeholders])
             self.enqueue_op = self.queue.enqueue_many(self.placeholders)
