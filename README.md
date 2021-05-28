@@ -4,7 +4,7 @@ This Git repository implements a tkinter/opencv video player which will allow us
 [Video demo](https://www.youtube.com/watch?v=3BcrK0O1kb4)
 
 # Dependencies:
-1. Python 3.5 
+1. Python 3.7.10
 2. OpenCV 2 
 2. Tensorflow and its requirements.
 3. NumPy
