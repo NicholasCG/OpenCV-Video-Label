@@ -20,7 +20,6 @@ from .constants import MAX_TRACK_LENGTH
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 
 SPEED_OUTPUT = True
-tf.compat.v1.disable_eager_execution()
 
 class Re3Tracker(object):
     def __init__(self, gpu_id=GPU_ID):
