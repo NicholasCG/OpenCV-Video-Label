@@ -78,6 +78,14 @@ class TkOptionFrame:
         self.track_scale.grid(button_config, column=4, row=2)
         self.track_scale.bind("<ButtonRelease-1>", self.update_track_speed)
 
+    # Fixes bug where Listbox options were stacking on top of each other.
+    def reset_list(self):
+        self.algorithm_selection.delete(0, 'end')
+        self.algorithm_selection.insert(0, " Re3 (default)")
+        self.algorithm_selection.insert(1, " CMT ")
+        self.algorithm_selection.select_set(0)
+        self.algorithm_selection.grid(column=0, row=2, sticky=tk.NSEW)
+
     # updates playback sleep time and label
     def update_speed(self, _):
         self.parent.speed = self.speed_scale.get()

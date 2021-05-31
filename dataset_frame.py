@@ -150,7 +150,7 @@ class TkDatasetFrame:
             spacing = tk.Frame(self.settings_frame, bg=GUI_SHADOW, height=1)
             spacing.pack(side="bottom", fill="x", padx=10)
 
-            self.export_selection = tk.Listbox(self.settings_frame, selectmode=tk.BROWSE)
+            self.export_selection = tk.Listbox(self.settings_frame, selectmode=tk.BROWSE, width = 21)
             self.export_selection.configure(relief="flat", cursor="hand2", takefocus=0, activestyle='none', bd=0,
                                             height=3,
                                             highlightcolor=GUI_BG, highlightbackground=GUI_BG,
@@ -168,6 +168,14 @@ class TkDatasetFrame:
             # option menu to select how the data will be exported:
             tk.Label(self.settings_frame, bg=GUI_BG, fg=GUI_GRAYD, font="Arial 10 bold",
                      text="Export format:").pack(side="bottom", fill="x", padx=40)
+
+        # Fixes bug where Listbox options were stacking on top of each other.
+        if self.export_selection:
+            self.export_selection.delete(0, 'end')
+            self.export_selection.insert(0, "     Cropped images")
+            self.export_selection.insert(1, "     Pascal VOC (xml)")
+            self.export_selection.insert(2, "     Single csv file")
+            self.export_selection.select_set(0)
 
     def update_export_selection(self, _):
         index = self.export_selection.curselection()[0]

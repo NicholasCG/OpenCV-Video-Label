@@ -125,6 +125,7 @@ class MainWindow:
         index = event.widget.index("current")
         if index == 0:
             self.active_tab = "video_miner"
+            self.tracking_options.reset_list()
         elif index == 1:
             self.control_panel.pause_playing()
             self.active_tab = "dataset_explorer"
