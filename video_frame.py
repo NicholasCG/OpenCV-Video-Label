@@ -202,3 +202,5 @@ class RectTracker:
             self.root.tracking = False
 
         self.root.control_panel.start_playing()
+        self.root.video_loop(single_frame=True)
+        self.root.control_panel.pause_playing()

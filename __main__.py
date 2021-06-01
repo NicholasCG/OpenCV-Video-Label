@@ -165,6 +165,7 @@ class MainWindow:
             self.calc_fps()
 
             new_frame_available, self.cur_image = self.video.read()
+            ignore, pure_original = self.video.read() # Used for exporting ROI images
 
             if new_frame_available:
                 self.frame_counter += 1
@@ -184,10 +185,17 @@ class MainWindow:
                                                                 tl_x, tl_y, br_x, br_y)
                             # store image to dataset
                             if self.frame_counter % self.tracking_options.get_n() == 0:
-                                successful_cropping = dataset_image.crop_and_pad_roi()
+
+                                # Create pure version of the image w/o other ROIs drawn on top (fixing bug).
+                                pure_image = dataset.DatasetImage(pure_original[:, :, ::1],
+                                                                self.max_image_count,
+                                                                obj,
+                                                                tl_x, tl_y, br_x, br_y)
+                                successful_cropping = pure_image.crop_and_pad_roi()
                                 if successful_cropping:
-                                    self.dataset.add_image(dataset_image)
+                                    self.dataset.add_image(pure_image)
                                     self.max_image_count += 1
+
                             dataset_image.draw_roi()
                             self.frame = dataset_image.image
 
