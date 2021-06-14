@@ -139,7 +139,7 @@ class TkDatasetFrame:
             self.current_class = self.parent.current_object
 
         # initialise delete button if not yet done
-        if not self.delete_button and self.current_class:
+        if not self.delete_button:
             self.delete_button = tk.Button(self.settings_frame, EDIT_BUTTON_LAYOUT, text='Delete selected images',
                                            command=self.delete_selected)
             self.delete_button.pack(side="top", fill="x", pady=10, padx=20)
@@ -185,17 +185,18 @@ class TkDatasetFrame:
     # which allows the user to display the images of that class
     def add_classes(self):
         for object_class in self.dataset.classes:
-            total = tk.Frame(self.class_frame, bg=GUI_SHADOW, height=1)
-            total.pack(side="top", fill="x", padx=10)
+            if len(self.dataset.dataset_dict[object_class]) != 0:
+                total = tk.Frame(self.class_frame, bg=GUI_SHADOW, height=1)
+                total.pack(side="top", fill="x", padx=10)
 
-            title_string = object_class + " ({})".format(len(self.dataset.dataset_dict[object_class]))
-            action_with_arg = partial(self.draw_images, object_class)
-            title = tk.Button(total, BUTTON_LAYOUT, text=title_string, command=action_with_arg)
-            title.pack(side="top", fill="x", )
+                title_string = object_class + " ({})".format(len(self.dataset.dataset_dict[object_class]))
+                action_with_arg = partial(self.draw_images, object_class)
+                title = tk.Button(total, BUTTON_LAYOUT, text=title_string, command=action_with_arg)
+                title.pack(side="top", fill="x", )
 
-            spacing = tk.Frame(total, bg=GUI_SHADOW, height=1)
-            spacing.pack(side="top", fill="x", padx=10)
-            self.frame_list.append(total)
+                spacing = tk.Frame(total, bg=GUI_SHADOW, height=1)
+                spacing.pack(side="top", fill="x", padx=10)
+                self.frame_list.append(total)
 
         # if classes available, draw the current classes' images on the middle frame
         if self.dataset.classes:

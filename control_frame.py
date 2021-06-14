@@ -108,10 +108,12 @@ class TkControlFrame(tk.Frame):
 
     # decrease playing speed of video
     def decrease_speed(self):
+        return
         print("not doing anything right now", self)
 
     # increase playing speed of video
     def increase_speed(self):
+        return
         print("not doing anything right now", self)
 
     # start playing, update button image

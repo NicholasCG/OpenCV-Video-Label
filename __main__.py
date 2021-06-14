@@ -249,7 +249,7 @@ class LoadingScreen(tk.Toplevel):
         loadframe.pack(side="top", padx=self.border_width, pady=self.border_width, fill="both")
         opencv_text.pack(side="top", pady=int((self.height - self.font_size - 2 * self.border_width - 30) / 2))
         modified_text.pack(side="bottom")
-        copyright_text.pack(side="bottom")
+        copyright_text.pack(side="top")
         self.update()
 
     # fade away animation after the imports are complete
