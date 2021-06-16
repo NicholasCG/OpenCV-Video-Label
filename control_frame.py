@@ -58,10 +58,10 @@ class TkControlFrame(tk.Frame):
         tooltip.CreateToolTip(self.playbut, "Play/pause")
 
         # playing speed decrease button
-        decreasebut = tk.Button(self.button_panel, BUTTON_SETTINGS, command=self.decrease_speed,
-                                image=self.decrease_photo)
-        decreasebut.grid(button_config, column=3)
-        tooltip.CreateToolTip(decreasebut, "Decrease speed")
+        # decreasebut = tk.Button(self.button_panel, BUTTON_SETTINGS, command=self.decrease_speed,
+        #                         image=self.decrease_photo)
+        # decreasebut.grid(button_config, column=3)
+        # tooltip.CreateToolTip(decreasebut, "Decrease speed")
 
         # stop button
         stopbut = tk.Button(self.button_panel, BUTTON_SETTINGS, command=self.stop)
@@ -70,10 +70,10 @@ class TkControlFrame(tk.Frame):
         tooltip.CreateToolTip(stopbut, "Stop playing")
 
         # playing speed increase button
-        increasebut = tk.Button(self.button_panel, BUTTON_SETTINGS, command=self.increase_speed,
-                                image=self.increase_photo)
-        increasebut.grid(button_config, column=5)
-        tooltip.CreateToolTip(increasebut, "Increase speed")
+        # increasebut = tk.Button(self.button_panel, BUTTON_SETTINGS, command=self.increase_speed,
+        #                         image=self.increase_photo)
+        # increasebut.grid(button_config, column=5)
+        # tooltip.CreateToolTip(increasebut, "Increase speed")
 
     # spacebar pause to prevent class editing problems
     def space_playpause(self):

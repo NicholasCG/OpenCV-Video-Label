@@ -211,7 +211,10 @@ class TkDatasetFrame:
         self.clear(self.image_list)
 
         # reset scroll position to top and set header to fit current class
-        self.image_header.set(str(object_class) + " images:")
+        if type(object_class) == list:
+            self.image_header.set("Please select an object")
+        else:
+            self.image_header.set(str(object_class) + " images:")
         self.canvas.yview_moveto(0)
         width = self.canvas.winfo_width()
         ipad = 2
@@ -242,23 +245,6 @@ class TkDatasetFrame:
                     row = tk.Frame(self.image_frame, FRAME_SETTINGS)
                     row_num += 1
                     col_num = 0
-
-        else:
-            for object_im in object_class:
-                for image_object in self.dataset.dataset_dict[object_im]:
-                    image_button = tk.Button(row, IMAGE_BUTTON, image=image_object.preview_image,
-                                            command=lambda name=image_object: self.add_to_selected(name))
-                    image_button.image = image_object.preview_image
-                    image_button.grid(column=col_num, row=0, ipady=ipad, ipadx=ipad, sticky="nsew",
-                                    padx=img_padding, pady=img_padding)
-                    self.button_list[image_object.image_id] = image_button
-                    col_num += 1
-                    if col_num == self.img_per_row:
-                        row.grid(row=row_num, column=0)
-                        self.image_list.append(row)
-                        row = tk.Frame(self.image_frame, FRAME_SETTINGS)
-                        row_num += 1
-                        col_num = 0
 
         row.grid(row=row_num, column=0)
         self.image_list.append(row)

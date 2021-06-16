@@ -25,7 +25,7 @@ class TkTopMenu(tk.Menu):
         self.file_menu.add_command(label="Open ipwebcam", command=self.open_ipwebcam,
                                    accelerator="Ctrl+I")
         self.file_menu.add_command(label="Open screencapture", command=self.open_screencapture, accelerator="Ctrl+S")
-        self.file_menu.add_command(label="Import dataset", command=self.import_dataset_thread, accelerator="Ctrl+D")
+        #self.file_menu.add_command(label="Import dataset", command=self.import_dataset_thread, accelerator="Ctrl+D")
 
         # self.file_menu.add_command(label="Save", command=self.save_file, accelerator="Ctrl+S")
         self.file_menu.add_command(label="Quit", command=self.quit_app, accelerator="Ctrl+Q")
@@ -36,7 +36,7 @@ class TkTopMenu(tk.Menu):
         self.help_menu.add_command(label="About", command=self.about_app, underline=1, accelerator="Ctrl+A")
 
         # add shortcuts to the application
-        self.root.bind('<Control-d>', lambda e: self.import_dataset_thread())
+        #self.root.bind('<Control-d>', lambda e: self.import_dataset_thread())
         self.root.bind('<Control-o>', lambda e: self.open_file())
         self.root.bind('<Control-w>', lambda e: self.open_webcam())
         self.root.bind('<Control-i>', lambda e: self.open_ipwebcam())

@@ -46,8 +46,8 @@ class Dataset:
         dir_path = os.path.dirname(os.path.realpath(__file__)) + "/datasets"
         folder_selected = filedialog.askdirectory(initialdir=dir_path)
         time = datetime.datetime.now().strftime("%H_%M")
-        base_folder = "/Dataset_" + time + "/"
-        directory = folder_selected + base_folder
+        base_folder = "Dataset_" + time + "/"
+        directory = os.path.join(folder_selected, base_folder)
         if not os.path.exists(directory):
             os.makedirs(directory)
 
