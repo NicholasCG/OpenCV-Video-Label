@@ -190,6 +190,8 @@ class TkDatasetFrame:
         else:
             self.clear(self.image_list)
 
+    # Draws the images of the class as buttons, and separates the dataset 
+    # into pages to limit the number of images loaded at once.
     def draw_images(self, object_class, page):
         # remove currently displayed images
         self.clear(self.image_list)
@@ -202,12 +204,12 @@ class TkDatasetFrame:
         self.canvas.yview_moveto(0)
         width = self.canvas.winfo_width()
         height = self.canvas.winfo_height()
-        #print(width, height)
         ipad = 2
         row_num = 0
         col_num = 0
 
-        # calculate the number of images that fit a row given the current screen width
+        # calculate the number of images that fit a row given the current screen width,
+        # and how many images can fit on screen.
         self.img_per_row = int((width - 20) / (data_set_previewsize + 2 * (ipad + img_padding)))
         self.img_per_col = int((height - 20) / (data_set_previewsize + 2 * (ipad + img_padding)))
         max_per_page = self.img_per_row * self.img_per_col
@@ -217,7 +219,7 @@ class TkDatasetFrame:
 
         row = tk.Frame(self.image_frame, FRAME_SETTINGS)
 
-        # reset scroll position to top and set header to fit current class
+        # Set header to fit current class, and draw the buttons if applicable
         if type(object_class) == list:
             self.image_header.set("Please select an object")
         else:
@@ -266,10 +268,6 @@ class TkDatasetFrame:
                     break
 
         row.grid(row=row_num, column=0)
-        # self.next_button = tk.Button(self.image_frame, EDIT_BUTTON_LAYOUT, text='Next page',
-        #                                    command=print)
-
-        # self.next_button.grid(row = row_num + 1, column = col_num)
         self.image_list.append(row)
 
     # use thread to prevent gui form freezing when exporting dataset

@@ -1,19 +1,19 @@
-import cv2
 import time
-import top_menu
-import video_frame
-import dataset_frame
-import control_frame
-import option_frame
-import status_bar
-import numpy as np
 import tkinter as tk
 from tkinter import ttk
-from PIL import Image, ImageTk
-from constants import ICONPNG, VIDEO_H, VIDEO_W, GUI_BG, GUI_GRAYL, GUI_RED
 
-# testing:
+import cv2
+import numpy as np
+from PIL import Image, ImageTk
+
+import control_frame
 import dataset
+import dataset_frame
+import option_frame
+import status_bar
+import top_menu
+import video_frame
+from constants import GUI_BG, GUI_GRAYL, GUI_RED, ICONPNG, VIDEO_H, VIDEO_W
 
 
 class MainWindow:
@@ -50,7 +50,8 @@ class MainWindow:
         self.root.withdraw()
         x = int(self.root.winfo_screenwidth() / 2 - (VIDEO_W + 200) / 2)
         y = int(self.root.winfo_screenheight() / 2 - (VIDEO_H + 260) / 2)
-        self.root.geometry('%dx%d+%d+%d' % (VIDEO_W + 200, VIDEO_H + 260, x, y))
+        self.root.geometry('%dx%d+%d+%d' %
+                           (VIDEO_W + 200, VIDEO_H + 260, x, y))
 
         self.root.minsize(VIDEO_W, VIDEO_H + 260)
         self.root.title("OpenCV Video Label")
@@ -141,7 +142,8 @@ class MainWindow:
 
     # creates the solitaire-like video while tracking
     def solitaire_maker(self, tl_x, tl_y, br_x, br_y):
-        self.solitaire_image[tl_y:br_y, tl_x:br_x] = self.cur_image[tl_y:br_y, tl_x:br_x]
+        self.solitaire_image[tl_y:br_y,
+                             tl_x:br_x] = self.cur_image[tl_y:br_y, tl_x:br_x]
         self.solitaire_video.write(self.solitaire_image[:, :, ::-1])
 
     # function to calculate and display the fps on gui
@@ -165,32 +167,34 @@ class MainWindow:
             self.calc_fps()
 
             new_frame_available, self.cur_image = self.video.read()
-            ignore, pure_original = self.video.read() # Used for exporting ROI images
+            ignore, pure_original = self.video.read()  # Used for exporting ROI images
 
             if new_frame_available:
                 self.frame_counter += 1
 
                 # update the video location scale to location of the new frame number
                 if not self.control_panel.scale_drag:
-                    self.control_panel.scale.set(self.video.get(cv2.CAP_PROP_POS_FRAMES))
+                    self.control_panel.scale.set(
+                        self.video.get(cv2.CAP_PROP_POS_FRAMES))
 
                 # use tracker to locate the object in the new frame
                 if self.tracking:
                     for obj in self.current_object:
                         try:
-                            [tl_x, tl_y, br_x, br_y] = self.tracker.track(obj, self.cur_image[:, :, ::-1])
+                            [tl_x, tl_y, br_x, br_y] = self.tracker.track(
+                                obj, self.cur_image[:, :, ::-1])
                             dataset_image = dataset.DatasetImage(self.cur_image[:, :, ::1],
-                                                                self.max_image_count,
-                                                                obj,
-                                                                tl_x, tl_y, br_x, br_y)
+                                                                 self.max_image_count,
+                                                                 obj,
+                                                                 tl_x, tl_y, br_x, br_y)
                             # store image to dataset
                             if self.frame_counter % self.tracking_options.get_n() == 0:
 
                                 # Create pure version of the image w/o other ROIs drawn on top (fixing bug).
                                 pure_image = dataset.DatasetImage(pure_original[:, :, ::1],
-                                                                self.max_image_count,
-                                                                obj,
-                                                                tl_x, tl_y, br_x, br_y)
+                                                                  self.max_image_count,
+                                                                  obj,
+                                                                  tl_x, tl_y, br_x, br_y)
                                 successful_cropping = pure_image.crop_and_pad_roi()
                                 if successful_cropping:
                                     self.dataset.add_image(pure_image)
@@ -242,13 +246,18 @@ class LoadingScreen(tk.Toplevel):
         self.geometry('%dx%d+%d+%d' % (self.width, self.height, x, y))
 
         loadframe = tk.Frame(self, bg=GUI_BG)
-        opencv_text = tk.Label(loadframe, text=parent.title(), font=("Arial", self.font_size, "bold"), bg=GUI_BG)
-        copyright_text = tk.Label(loadframe, text="Made by Nathan de Bruijn", font=("Arial", 7), bg=GUI_BG)
-        modified_text = tk.Label(loadframe, text="Modified by Nicholas Gray", font=("Arial", 7), bg=GUI_BG)
+        opencv_text = tk.Label(loadframe, text=parent.title(), font=(
+            "Arial", self.font_size, "bold"), bg=GUI_BG)
+        copyright_text = tk.Label(
+            loadframe, text="Made by Nathan de Bruijn", font=("Arial", 7), bg=GUI_BG)
+        modified_text = tk.Label(
+            loadframe, text="Modified by Nicholas Gray", font=("Arial", 7), bg=GUI_BG)
 
-        copyright_text.pack(side = "top")
-        loadframe.pack(side="top", padx=self.border_width, pady=self.border_width, fill="both")
-        opencv_text.pack(side="top", pady=int((self.height - self.font_size - 2 * self.border_width - 30) / 2))
+        copyright_text.pack(side="top")
+        loadframe.pack(side="top", padx=self.border_width,
+                       pady=self.border_width, fill="both")
+        opencv_text.pack(side="top", pady=int(
+            (self.height - self.font_size - 2 * self.border_width - 30) / 2))
         modified_text.pack(side="bottom")
         self.update()
 
