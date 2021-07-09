@@ -246,10 +246,10 @@ class LoadingScreen(tk.Toplevel):
         copyright_text = tk.Label(loadframe, text="Made by Nathan de Bruijn", font=("Arial", 7), bg=GUI_BG)
         modified_text = tk.Label(loadframe, text="Modified by Nicholas Gray", font=("Arial", 7), bg=GUI_BG)
 
+        copyright_text.pack(side = "top")
         loadframe.pack(side="top", padx=self.border_width, pady=self.border_width, fill="both")
         opencv_text.pack(side="top", pady=int((self.height - self.font_size - 2 * self.border_width - 30) / 2))
         modified_text.pack(side="bottom")
-        copyright_text.pack(side="top")
         self.update()
 
     # fade away animation after the imports are complete

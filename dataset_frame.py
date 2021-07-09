@@ -54,7 +54,7 @@ class TkDatasetFrame:
         self.image_frame_base.grid(row=0, column=1, sticky="nsew", pady=10)
 
         self.image_header = tk.StringVar()
-        self.image_header.set("Images:")
+        self.image_header.set("Please track an object")
         self.images_label = tk.Label(self.image_frame_base, LABEL_TITLE, textvariable=self.image_header)
         self.images_label.pack(side="top", fill="x")
 
@@ -70,6 +70,10 @@ class TkDatasetFrame:
         self.interior_id = self.canvas.create_window((0, 0), window=self.image_frame, anchor='nw')
 
         self.img_per_row = None
+        self.img_per_col = None
+        self.next_button = None
+        self.prev_button = None
+        self.current_page = 0
 
         # =========== settings / export list ===============#
         self.settings_frame = tk.Frame(self.parent.dataset_explorer, bg=GUI_BG, width=200)
@@ -87,26 +91,8 @@ class TkDatasetFrame:
         self.export_button = None
         self.export_selection = None
 
-        # resize and scroll functions
-        if OS == "Linux":
-            self.canvas.bind_all('<4>', self._on_mousewheel, add='+')
-            self.canvas.bind_all('<5>', self._on_mousewheel, add='+')
-        else:
-            # Windows and MacOS
-            self.canvas.bind_all("<MouseWheel>", self._on_mousewheel, add='+')
-
         self.canvas.bind('<Configure>', self._configure_canvas)
         self.image_frame.bind('<Configure>', self._configure_interior)
-
-    # scroll canvas on mousewheel scroll
-    def _on_mousewheel(self, event):
-        if OS == "Linux":
-            if event.num == 4:
-                self.canvas.yview_scroll(-1, "units")
-            elif event.num == 5:
-                self.canvas.yview_scroll(1, "units")
-        else:
-            self.canvas.yview_scroll(int(-1 * (event.delta / 100)), "units")
 
     # track changes to the canvas and frame width and sync them,
     # also updating the scrollbar
@@ -190,7 +176,7 @@ class TkDatasetFrame:
                 total.pack(side="top", fill="x", padx=10)
 
                 title_string = object_class + " ({})".format(len(self.dataset.dataset_dict[object_class]))
-                action_with_arg = partial(self.draw_images, object_class)
+                action_with_arg = partial(self.draw_images, object_class, self.current_page)
                 title = tk.Button(total, BUTTON_LAYOUT, text=title_string, command=action_with_arg)
                 title.pack(side="top", fill="x", )
 
@@ -200,38 +186,75 @@ class TkDatasetFrame:
 
         # if classes available, draw the current classes' images on the middle frame
         if self.dataset.classes:
-            self.draw_images(self.current_class)
+            self.draw_images(self.current_class, self.current_page)
         else:
             self.clear(self.image_list)
 
     # TODO try adding images more images on scroll instead of all at once, or pagination
     # updates the image frame with the images without the use of threads
-    def draw_images(self, object_class):
+    def draw_images(self, object_class, page):
         # remove currently displayed images
         self.clear(self.image_list)
 
-        # reset scroll position to top and set header to fit current class
-        if type(object_class) == list:
-            self.image_header.set("Please select an object")
-        else:
-            self.image_header.set(str(object_class) + " images:")
+        if self.next_button != None:
+            self.next_button.destroy()
+        if self.prev_button != None:
+            self.prev_button.destroy()
+
         self.canvas.yview_moveto(0)
         width = self.canvas.winfo_width()
+        height = self.canvas.winfo_height()
+        #print(width, height)
         ipad = 2
         row_num = 0
         col_num = 0
 
         # calculate the number of images that fit a row given the current screen width
         self.img_per_row = int((width - 20) / (data_set_previewsize + 2 * (ipad + img_padding)))
+        self.img_per_col = int((height - 20) / (data_set_previewsize + 2 * (ipad + img_padding)))
+        max_per_page = self.img_per_row * self.img_per_col
         self.current_class = object_class
         self.current_selection = []
         self.button_list = {}
 
         row = tk.Frame(self.image_frame, FRAME_SETTINGS)
 
+        # reset scroll position to top and set header to fit current class
+        if type(object_class) == list:
+            self.image_header.set("Please select an object")
+        else:
+            end = len(self.dataset.dataset_dict[object_class])
+            def up():
+                if ((page + 1) * max_per_page < end):
+                    self.current_page += 1
+                    self.draw_images(object_class, self.current_page)
+            def down():
+                if (page > 0):
+                    self.current_page -= 1
+                    self.draw_images(object_class, self.current_page)
+
+            self.image_header.set(str(object_class) + " images:")
+
+            if (page > 0):
+                self.prev_button = tk.Button(self.images_label, EDIT_BUTTON_LAYOUT, text='Last page',
+                                            command = down)
+
+                self.prev_button.pack(side = "left", fill = "x", padx = 10)
+
+            if ((page + 1) * max_per_page < end):
+                self.next_button = tk.Button(self.images_label, EDIT_BUTTON_LAYOUT, text='Next page',
+                                            command = up)
+
+                self.next_button.pack(side = "right", fill = "x", padx = 10)
+
         # draw the images buttons on row frames which are added to the main image frame
         if type(object_class) != list:
-            for image_object in self.dataset.dataset_dict[object_class]:
+            end = len(self.dataset.dataset_dict[object_class])
+            for image_index in range(page * max_per_page, (page + 1) * max_per_page):
+            #for image_object in self.dataset.dataset_dict[object_class]:
+                if image_index >= end:
+                    break
+                image_object = self.dataset.dataset_dict[object_class][image_index]
                 image_button = tk.Button(row, IMAGE_BUTTON, image=image_object.preview_image,
                                         command=lambda name=image_object: self.add_to_selected(name))
                 image_button.image = image_object.preview_image
@@ -245,8 +268,14 @@ class TkDatasetFrame:
                     row = tk.Frame(self.image_frame, FRAME_SETTINGS)
                     row_num += 1
                     col_num = 0
+                if row_num == self.img_per_col:
+                    break
 
         row.grid(row=row_num, column=0)
+        # self.next_button = tk.Button(self.image_frame, EDIT_BUTTON_LAYOUT, text='Next page',
+        #                                    command=print)
+
+        # self.next_button.grid(row = row_num + 1, column = col_num)
         self.image_list.append(row)
 
     # use thread to prevent gui form freezing when exporting dataset
