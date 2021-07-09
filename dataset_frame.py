@@ -204,8 +204,8 @@ class TkDatasetFrame:
         else:
             self.clear(self.image_list)
 
-    # TODO try adding images more images on scroll instead of all at once, or pagination
-    # updates the image frame with the images without the use of threads
+    # TODO Try breaking up the image buttons into pages, so that not all the buttons are
+    # generated at once. This would easily be done without the usage of threads.
     def draw_images(self, object_class):
         # remove currently displayed images
         self.clear(self.image_list)
@@ -229,20 +229,16 @@ class TkDatasetFrame:
 
         row = tk.Frame(self.image_frame, FRAME_SETTINGS)
 
-        # draw the images buttons on row frames which are added to the main image frame
+        # draw the images buttons on a row frame which are added to the main image frame
         if type(object_class) != list:
             for image_object in self.dataset.dataset_dict[object_class]:
                 image_button = tk.Button(row, IMAGE_BUTTON, image=image_object.preview_image,
                                         command=lambda name=image_object: self.add_to_selected(name))
-                image_button.image = image_object.preview_image
-                image_button.grid(column=col_num, row=0, ipady=ipad, ipadx=ipad, sticky="nsew",
+                image_button.grid(column=col_num, row=row_num, ipady=ipad, ipadx=ipad, sticky="nsew",
                                 padx=img_padding, pady=img_padding)
                 self.button_list[image_object.image_id] = image_button
                 col_num += 1
                 if col_num == self.img_per_row:
-                    row.grid(row=row_num, column=0)
-                    self.image_list.append(row)
-                    row = tk.Frame(self.image_frame, FRAME_SETTINGS)
                     row_num += 1
                     col_num = 0
 
