@@ -168,8 +168,18 @@ class MainWindow:
 
             new_frame_available, self.cur_image = self.video.read()
             ignore, pure_original = self.video.read()  # Used for exporting ROI images
+            max_count = False
+
+            # Stop trying to track. You have too many images.
+            if sum(len(x) for x in self.dataset.dataset_dict.values()) >= 4000:
+                self.status_bar.set("Maximum image count reached. Please process current images before continuing tracking.")
+                self.current_object.clear()
+                self.tracking = False
+                self.control_panel.pause_playing()
+                return
 
             if new_frame_available:
+
                 self.frame_counter += 1
 
                 # update the video location scale to location of the new frame number
@@ -203,6 +213,16 @@ class MainWindow:
                             dataset_image.draw_roi()
                             self.frame = dataset_image.image
 
+                            # Stop tracking immediately if over 4000 images. This is to make sure the tracker doesn't
+                            # break due to too much memory taken.
+                            if sum(len(x) for x in self.dataset.dataset_dict.values()) >= 4000:
+                                self.status_bar.set("Maximum image count reached. Please process current images before continuing tracking.")
+                                self.current_object.clear()
+                                self.tracking = False
+                                self.control_panel.pause_playing()
+                                max_count = True
+                                break
+
                         # except to catch cmt bugs
                         except Exception as e:
                             print(e, "in main.py at: if self.tracking:")
@@ -212,6 +232,8 @@ class MainWindow:
                 if self.tracking and self.solitaire_mode:
                     self.solitaire_maker(tl_x, tl_y, br_x, br_y)
                     self.frame = Image.fromarray(self.solitaire_image)
+                elif max_count:
+                    self.frame = Image.fromarray(pure_original)
                 else:
                     self.frame = Image.fromarray(self.cur_image)
 

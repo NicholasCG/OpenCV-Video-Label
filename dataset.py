@@ -35,6 +35,10 @@ class Dataset:
             self.dataset_dict.pop(image_object.image_class, None)
         del image_object
 
+    def clear(self):
+        self.classes.clear()
+        self.dataset_dict.clear()
+
     def move_image(self, image, dest_class):
         pass
 
@@ -47,6 +51,8 @@ class Dataset:
         folder_selected = filedialog.askdirectory(initialdir=dir_path)
         time = datetime.datetime.now().strftime("%H_%M")
         base_folder = "Dataset_" + time + "/"
+        if not folder_selected:
+            return
         directory = os.path.join(folder_selected, base_folder)
         if not os.path.exists(directory):
             os.makedirs(directory)
@@ -77,6 +83,10 @@ class Dataset:
                     self.create_csv_entry(image_object, directory)
 
         self.root.status_bar.set("Successfully exported dataset.")
+
+        # Clear the dataset and the dataset frame.
+        self.clear()
+        self.root.dataset_frame.reset()
 
     @staticmethod
     def prettify(elem):

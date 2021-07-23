@@ -163,6 +163,10 @@ class TkDatasetFrame:
             self.export_selection.insert(2, "     Single csv file")
             self.export_selection.select_set(0)
 
+    # Kinda gross, but works quite well. Just reinitializes the object entirely.
+    def reset(self):
+        self.__init__(self.parent)
+
     def update_export_selection(self, _):
         index = self.export_selection.curselection()[0]
         self.dataset.export_setting = index
