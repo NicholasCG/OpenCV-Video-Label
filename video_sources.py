@@ -25,6 +25,7 @@ class VideoStream:
         filetype = filename.split(".")[-1]
         if filename:
             if filetype in SUPPORTED_FILES:
+                self.source = os.path.split(filename)[-1]
                 self.stream = cv2.VideoCapture(filename)
                 self.parent.frame_count = self.stream.get(cv2.CAP_PROP_FRAME_COUNT)
                 self.parent.control_panel.scale["to"] = self.parent.frame_count

@@ -96,15 +96,38 @@ class Dataset:
 
     @staticmethod
     def create_csv_entry(image, directory):
-        headers = ['filename', 'width', 'height', 'class', "xmin", "ymin", "xmax", "ymax"]
+        headers = ['Filename', 
+                    'Annotation tag', 
+                    'Upper left corner X', 
+                    'Upper left corner Y', 
+                    "Lower right corner X", 
+                    "Lower right corner Y", 
+                    "Occluded", 
+                    "On another road",
+                    "Origin file",
+                    "Origin frame number",
+                    "Origin track",
+                    "Origin track frame number"]
         filename = directory + directory.split("/")[-2] + ".csv"
         file_exists = os.path.isfile(filename)
         with open(filename, 'a', newline='') as outfile:
             writer = csv.writer(outfile)
             if not file_exists:
                 writer.writerow(headers)
-            item = [image.image_name + ".jpg", image.width, image.height, image.image_class, image.tl_x, image.tl_y,
-                    image.br_x, image.br_y]
+            item = [image.image_name + ".jpg", 
+                    image.image_class, 
+                    image.tl_x, 
+                    image.tl_y, 
+                    image.br_x, 
+                    image.br_y,
+                    "Manually add",
+                    "Manually add",
+                    image.source,
+                    image.frame,
+                    image.source,
+                    image.frame]
+
+            #print(self.root.video.source)
             writer.writerow(item)
 
     # creates pascal VOC format xml file for an dataset image
@@ -161,11 +184,13 @@ class Dataset:
 
 
 class DatasetImage:
-    def __init__(self, image, image_id, image_class, tl_x, tl_y, br_x, br_y):
+    def __init__(self, image, image_id, image_class, tl_x, tl_y, br_x, br_y, frame, source):
         self.image = image
         self.image_id = image_id
         self.image_class = image_class
         self.tl_x, self.tl_y, self.br_x, self.br_y = tl_x, tl_y, br_x, br_y
+        self.frame = frame
+        self.source = source
 
         self.image_name = self.image_class + "_" + str(self.image_id)
         self.export_image = image.copy()

@@ -160,12 +160,16 @@ class MainWindow:
             self.frame_time_list = []
             self.status_bar.set("FPS: " + str(fps))
 
+    def calc_frame(self):
+        self.status_bar.set("Frame " + str(self.frame_counter))
+
     # video playing function from where tracking algorithms are called
     def video_loop(self, single_frame=False):
         [tl_x, tl_y, br_x, br_y] = [0, 0, 0, 0]
         if self.play and self.video:
-            self.calc_fps()
-
+            #self.calc_fps()
+            self.calc_frame()
+            
             new_frame_available, self.cur_image = self.video.read()
             ignore, pure_original = self.video.read()  # Used for exporting ROI images
             max_count = False
@@ -196,7 +200,9 @@ class MainWindow:
                             dataset_image = dataset.DatasetImage(self.cur_image[:, :, ::1],
                                                                  self.max_image_count,
                                                                  obj,
-                                                                 tl_x, tl_y, br_x, br_y)
+                                                                 tl_x, tl_y, br_x, br_y, 
+                                                                 self.frame_counter,
+                                                                 self.video.source)
                             # store image to dataset
                             if self.frame_counter % self.tracking_options.get_n() == 0:
 
@@ -204,7 +210,9 @@ class MainWindow:
                                 pure_image = dataset.DatasetImage(pure_original[:, :, ::1],
                                                                   self.max_image_count,
                                                                   obj,
-                                                                  tl_x, tl_y, br_x, br_y)
+                                                                  tl_x, tl_y, br_x, br_y, 
+                                                                  self.frame_counter,
+                                                                  self.video.source)
                                 successful_cropping = pure_image.crop_and_pad_roi()
                                 if successful_cropping:
                                     self.dataset.add_image(pure_image)
