@@ -168,10 +168,9 @@ class MainWindow:
         [tl_x, tl_y, br_x, br_y] = [0, 0, 0, 0]
         if self.play and self.video:
             #self.calc_fps()
-            self.calc_frame()
-            
+
             new_frame_available, self.cur_image = self.video.read()
-            ignore, pure_original = self.video.read()  # Used for exporting ROI images
+            _, pure_original = self.video.read()  # Used for exporting ROI images
             max_count = False
 
             # Stop trying to track. You have too many images.
@@ -183,13 +182,14 @@ class MainWindow:
                 return
 
             if new_frame_available:
-
-                self.frame_counter += 1
+                # cv2 reads in frames by 2?
+                self.frame_counter = int(self.video.get(None))
+                self.calc_frame()
 
                 # update the video location scale to location of the new frame number
                 if not self.control_panel.scale_drag:
                     self.control_panel.scale.set(
-                        self.video.get(cv2.CAP_PROP_POS_FRAMES))
+                        self.video.get(None))
 
                 # use tracker to locate the object in the new frame
                 if self.tracking:

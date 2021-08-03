@@ -57,11 +57,11 @@ class TkControlFrame(tk.Frame):
         self.playbut.grid(button_config, column=2)
         tooltip.CreateToolTip(self.playbut, "Play/pause")
 
-        # playing speed decrease button
-        # decreasebut = tk.Button(self.button_panel, BUTTON_SETTINGS, command=self.decrease_speed,
-        #                         image=self.decrease_photo)
-        # decreasebut.grid(button_config, column=3)
-        # tooltip.CreateToolTip(decreasebut, "Decrease speed")
+        # previous frame
+        decreasebut = tk.Button(self.button_panel, BUTTON_SETTINGS, command=self.prev_frame,
+                                image=self.decrease_photo)
+        decreasebut.grid(button_config, column=3)
+        tooltip.CreateToolTip(decreasebut, "Previous frame")
 
         # stop button
         stopbut = tk.Button(self.button_panel, BUTTON_SETTINGS, command=self.stop)
@@ -69,11 +69,11 @@ class TkControlFrame(tk.Frame):
         stopbut.grid(button_config, column=4)
         tooltip.CreateToolTip(stopbut, "Stop playing")
 
-        # playing speed increase button
-        # increasebut = tk.Button(self.button_panel, BUTTON_SETTINGS, command=self.increase_speed,
-        #                         image=self.increase_photo)
-        # increasebut.grid(button_config, column=5)
-        # tooltip.CreateToolTip(increasebut, "Increase speed")
+        # next frame
+        increasebut = tk.Button(self.button_panel, BUTTON_SETTINGS, command=self.next_frame,
+                                image=self.increase_photo)
+        increasebut.grid(button_config, column=5)
+        tooltip.CreateToolTip(increasebut, "Next frame")
 
     # spacebar pause to prevent class editing problems
     def space_playpause(self):
@@ -92,6 +92,44 @@ class TkControlFrame(tk.Frame):
             if self.parent.video:
                 self.playbut['image'] = next(self.play_cycle)
 
+    # go to the next frame
+    def next_frame(self):
+        if self.parent.video:
+            if not self.parent.play:
+                self.start_playing()
+                self.parent.video_loop(single_frame = True)
+                self.pause_playing()
+
+    # go to the previous frame
+    def prev_frame(self):
+        if self.parent.video:
+            # self.scale.set(self.scale.get())
+            self.parent.video.set(self.parent.frame_counter - 2)
+            # self.scale_drag = False
+
+            # set the video to the new current frame
+            new_frame_available, new_frame = self.parent.video.read()
+
+            if new_frame_available:
+
+                self.parent.prev_frame = new_frame
+                self.parent.cur_frame = self.parent.prev_frame
+
+                self.parent.frame = Image.fromarray(self.parent.cur_frame)
+                self.parent.frame = ImageTk.PhotoImage(image=self.parent.frame)
+
+                self.parent.video_frame.frame_image["image"] = self.parent.frame
+                self.parent.video_frame.frame_image.photo = self.parent.frame
+
+            else:
+                self.scale.set(0)
+        else:
+            self.scale.set(0)
+
+        if self.parent.frame_counter -2 >= 0:
+            self.parent.frame_counter -= 2
+            self.parent.calc_frame()
+
     # stop playing
     def stop(self):
         if self.parent.video:
@@ -105,16 +143,6 @@ class TkControlFrame(tk.Frame):
             self.parent.status_bar.init()
             self.parent.fps = []
             self.scale.set(0)
-
-    # decrease playing speed of video
-    def decrease_speed(self):
-        return
-        print("not doing anything right now", self)
-
-    # increase playing speed of video
-    def increase_speed(self):
-        return
-        print("not doing anything right now", self)
 
     # start playing, update button image
     def start_playing(self):
@@ -143,6 +171,7 @@ class TkControlFrame(tk.Frame):
 
             # set the video to the new current frame
             new_frame_available, new_frame = self.parent.video.read()
+
             if new_frame_available:
 
                 self.parent.prev_frame = new_frame
@@ -155,5 +184,8 @@ class TkControlFrame(tk.Frame):
                 self.parent.video_frame.frame_image.photo = self.parent.frame
             else:
                 self.scale.set(0)
+
+            self.parent.frame_counter = int(self.parent.video.get(None))
+            self.parent.calc_frame()
         else:
             self.scale.set(0)

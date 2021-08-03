@@ -31,6 +31,9 @@ class VideoStream:
                 self.parent.control_panel.scale["to"] = self.parent.frame_count
                 self.parent.control_panel.scale.set(0)
                 self.parent.status_bar.set('Opening: %s' % (filename.split("/")[-1]))
+
+                # Consistent with timer bar
+                self.set(1)
             else:
                 self.parent.status_bar.set('Unsupported filetype: .{}'.format(filetype))
         else:
