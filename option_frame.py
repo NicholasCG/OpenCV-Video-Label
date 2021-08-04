@@ -28,13 +28,7 @@ class TkOptionFrame:
         tk.Grid.rowconfigure(self.entry_grid_fields, 0, weight=1)
 
         # entry for object class' name
-        tk.Label(self.entry_grid_fields, LABEL_TITLE, text="Object class:").grid(column=2, row=0, pady=1)
         self.object_class = tk.StringVar()
-        e1 = tk.Entry(self.entry_grid_fields, textvariable=self.object_class, fg=GUI_GRAYD, font=("Arial", 11, "bold"))
-        e1.grid(column=2, row=2, sticky=tk.N)
-        e1.insert(0, "default_class")
-        e1.bind("<FocusIn>", self.callback_entry1_focus)
-        e1.bind("<FocusOut>", self.callback_entry1_nofocus)
 
         # entry to edit the export interval value n
         tk.Label(self.entry_grid_fields, LABEL_TITLE, text="Export interval:").grid(column=1, row=0)
@@ -117,6 +111,10 @@ class TkOptionFrame:
         string = self.object_class.get().strip().replace(" ", "_")
         self.object_class.set(string)
         return string
+
+    # this changes the object class in the e1 text entry.
+    def set_object_class(self, name):
+        self.object_class.set(name)
 
     # returns the interval value n which determines how often a frame is stored to the dataset
     def get_n(self):

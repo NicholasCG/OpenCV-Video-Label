@@ -65,7 +65,23 @@ class TkVideoFrame:
                                                               cv2.VideoWriter_fourcc(*'XVID'), 24,
                                                               (VIDEO_W, VIDEO_H))
             self.parent.status_bar.set("Select your object of interest to start tracking. case 1")
+            was_playing = self.parent.play
             self.parent.control_panel.pause_playing()
+
+            # Popup for user to enter in name of new object.
+            object_name = tk.simpledialog.askstring(title = "Object name", 
+                                                prompt = "New object name: ", 
+                                                parent = self.root, 
+                                                initialvalue = "default_class")
+
+            # Decide not to track
+            if object_name == None:
+                if was_playing:
+                    self.parent.control_panel.start_playing()
+                return
+
+            self.parent.tracking_options.set_object_class(object_name)
+
             self.parent.selecting_roi = True
             self.parent.tracking = True
             self.rect_canvas = RectCanvas(self.frame, self.parent)
@@ -86,21 +102,25 @@ class TkVideoFrame:
         elif not self.parent.current_object:
             return
 
-        # Delete the region that shares the name with the current object name, if it exists.
-        temp_str = self.parent.tracking_options.get_object_class()
-        if temp_str in self.parent.current_object:
-            self.parent.current_object.remove(temp_str)
+        # Delete the region that the user chooses in the dialog
+        was_playing = self.parent.play
+        self.parent.control_panel.pause_playing()
+        
+        remove_name = RemoveDialog(title = "Test", parent = self.parent).delete_object
+        if remove_name is not None:
+            self.parent.current_object.remove(remove_name)
 
         # Check if there is anything still being tracked.
         if not self.parent.current_object:
             self.parent.tracking = False
 
         # If the video is paused, advance one frame to clear the selection.
-        if not self.parent.play:
+        if not was_playing:
             self.parent.control_panel.start_playing()
             self.parent.video_loop(single_frame=True)
             self.parent.control_panel.pause_playing()
-
+        else:
+            self.parent.control_panel.start_playing()
 
 
 # the canvas which allows the use of RectTracker
@@ -204,3 +224,42 @@ class RectTracker:
         self.root.control_panel.start_playing()
         self.root.video_loop(single_frame=True)
         self.root.control_panel.pause_playing()
+
+
+# Popup for removing an object being tracked. Will use a combobox.
+class RemoveDialog(tk.simpledialog.Dialog):
+    def __init__(self, parent, title):
+        # MainWindow parent and Tk parent are separated
+        # because I need the current object list that
+        # MainWindow holds
+        self.p = parent
+        root = parent.root
+        self.delete_object = None
+        super().__init__(root, title)
+
+    def body(self, frame):
+        self.remove_label = tk.Label(frame, text="Select object to remove: ")
+        self.remove_label.pack()
+
+        self.test_box = tk.ttk.Combobox(frame)
+        self.test_box['values'] = self.p.current_object
+        self.test_box.current(0)
+        self.test_box.pack()
+
+        return frame
+
+    def ok_pressed(self):
+        self.delete_object = self.test_box.get()
+        self.destroy()
+
+    def cancel_pressed(self):
+        self.destroy()
+
+
+    def buttonbox(self):
+        self.ok_button = tk.Button(self, text='OK', width=5, command=self.ok_pressed)
+        self.ok_button.pack(side="left")
+        cancel_button = tk.Button(self, text='Cancel', width=5, command=self.cancel_pressed)
+        cancel_button.pack(side="right")
+        self.bind("<Return>", lambda event: self.ok_pressed())
+        self.bind("<Escape>", lambda event: self.cancel_pressed())

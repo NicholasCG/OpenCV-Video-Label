@@ -204,7 +204,7 @@ class MainWindow:
                                                                  self.frame_counter,
                                                                  self.video.source)
                             # store image to dataset
-                            if self.frame_counter % self.tracking_options.get_n() == 0:
+                            if (self.frame_counter // 2) % self.tracking_options.get_n() == 0:
 
                                 # Create pure version of the image w/o other ROIs drawn on top (fixing bug).
                                 pure_image = dataset.DatasetImage(pure_original[:, :, ::1],
@@ -301,7 +301,6 @@ class LoadingScreen(tk.Toplevel):
         else:
             self.parent.deiconify()
             self.destroy()
-
 
 if __name__ == "__main__":
     app = MainWindow()
