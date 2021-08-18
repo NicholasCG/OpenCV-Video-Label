@@ -1,3 +1,4 @@
+from copy import deepcopy
 import time
 import tkinter as tk
 from tkinter import ttk
@@ -170,7 +171,8 @@ class MainWindow:
             #self.calc_fps()
 
             new_frame_available, self.cur_image = self.video.read()
-            _, pure_original = self.video.read()  # Used for exporting ROI images
+            #_, pure_original = self.video.read()  # Used for exporting ROI images
+            pure_original = deepcopy(self.cur_image)
             max_count = False
 
             # Stop trying to track. You have too many images.
