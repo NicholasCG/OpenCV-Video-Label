@@ -105,7 +105,9 @@ class Dataset:
                     "Occluded", 
                     "On another road",
                     "Origin file",
-                    "Origin frame number"]
+                    "Origin frame number",
+                    "Origin track",
+                    "Origin track frame number"]
         filename = directory + directory.split("/")[-2] + ".csv"
         file_exists = os.path.isfile(filename)
         with open(filename, 'a', newline='') as outfile:
@@ -118,6 +120,8 @@ class Dataset:
                     image.tl_y, 
                     image.br_x, 
                     image.br_y,
+                    "Manually add",
+                    "Manually add",
                     "Manually add",
                     "Manually add",
                     image.source,

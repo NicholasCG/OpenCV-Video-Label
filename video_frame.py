@@ -3,6 +3,8 @@ import tkinter as tk
 import numpy as np
 from PIL import Image, ImageTk
 from constants import VIDEO_BACKGROUND_IMG, VIDEO_H, VIDEO_W, VIDEO_PATH, GUI_RED
+import dataset
+from copy import deepcopy
 
 # frame which holds the video frames
 class TkVideoFrame:
@@ -116,12 +118,9 @@ class TkVideoFrame:
 
         # If the video is paused, advance one frame to clear the selection.
         if not was_playing:
-            self.parent.control_panel.start_playing()
-            self.parent.video_loop(single_frame=True)
-            self.parent.control_panel.pause_playing()
+            redraw_frame(self.parent)
         else:
             self.parent.control_panel.start_playing()
-
 
 # the canvas which allows the use of RectTracker
 class RectCanvas:
@@ -221,10 +220,38 @@ class RectTracker:
             print("failed initializing in video_frame:", e)
             self.root.tracking = False
 
-        self.root.control_panel.start_playing()
-        self.root.video_loop(single_frame=True)
-        self.root.control_panel.pause_playing()
+        redraw_frame(self.root)
+        # self.root.control_panel.start_playing()
+        # self.root.video_loop(single_frame=True)
+        # self.root.control_panel.pause_playing()
 
+# Redraws the frame after adding a new tracker or removing one.
+def redraw_frame(parent):
+    [tl_x, tl_y, br_x, br_y] = [0, 0, 0, 0]
+
+    cur_image = deepcopy(parent.pure_image)
+    
+    for obj in parent.current_object:
+        try:
+            [tl_x, tl_y, br_x, br_y] = parent.tracker.track(
+                obj, cur_image[:, :, ::-1])
+            dataset_image = dataset.DatasetImage(cur_image[:, :, ::1],
+                                                    parent.max_image_count,
+                                                    obj,
+                                                    tl_x, tl_y, br_x, br_y, 
+                                                    parent.frame_counter,
+                                                    parent.video.source)
+
+            dataset_image.draw_roi()
+
+        # except to catch cmt bugs
+        except Exception as e:
+            print(e, "in video_frame.py at: redraw_frame:")
+    
+    frame = Image.fromarray(cur_image)
+    parent.frame = ImageTk.PhotoImage(image=frame)
+    parent.video_frame.frame_image["image"] = parent.frame
+    parent.video_frame.frame_image.photo = parent.frame
 
 # Popup for removing an object being tracked. Will use a combobox.
 class RemoveDialog(tk.simpledialog.Dialog):

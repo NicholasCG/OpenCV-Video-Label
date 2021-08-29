@@ -23,6 +23,7 @@ class MainWindow:
         self.video = None
         self.frame = None
         self.cur_image = None
+        self.pure_image = None
         self.play = False
         self.selecting_roi = False
         self.tracking = False
@@ -172,7 +173,7 @@ class MainWindow:
 
             new_frame_available, self.cur_image = self.video.read()
             #_, pure_original = self.video.read()  # Used for exporting ROI images
-            pure_original = deepcopy(self.cur_image)
+            self.pure_image = deepcopy(self.cur_image)
             max_count = False
 
             # Stop trying to track. You have too many images.
@@ -206,18 +207,18 @@ class MainWindow:
                                                                  self.frame_counter,
                                                                  self.video.source)
                             # store image to dataset
-                            if (self.frame_counter // 2) % self.tracking_options.get_n() == 0:
+                            if self.frame_counter % self.tracking_options.get_n() == 0:
 
                                 # Create pure version of the image w/o other ROIs drawn on top (fixing bug).
-                                pure_image = dataset.DatasetImage(pure_original[:, :, ::1],
+                                pure_data_image = dataset.DatasetImage(self.pure_image[:, :, ::1],
                                                                   self.max_image_count,
                                                                   obj,
                                                                   tl_x, tl_y, br_x, br_y, 
                                                                   self.frame_counter,
                                                                   self.video.source)
-                                successful_cropping = pure_image.crop_and_pad_roi()
+                                successful_cropping = pure_data_image.crop_and_pad_roi()
                                 if successful_cropping:
-                                    self.dataset.add_image(pure_image)
+                                    self.dataset.add_image(pure_data_image)
                                     self.max_image_count += 1
 
                             dataset_image.draw_roi()
@@ -243,7 +244,7 @@ class MainWindow:
                     self.solitaire_maker(tl_x, tl_y, br_x, br_y)
                     self.frame = Image.fromarray(self.solitaire_image)
                 elif max_count:
-                    self.frame = Image.fromarray(pure_original)
+                    self.frame = Image.fromarray(self.pure_image)
                 else:
                     self.frame = Image.fromarray(self.cur_image)
 

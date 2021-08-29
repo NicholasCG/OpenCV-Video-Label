@@ -126,8 +126,8 @@ class TkControlFrame(tk.Frame):
         else:
             self.scale.set(0)
 
-        if self.parent.frame_counter -2 >= 0:
-            self.parent.frame_counter -= 2
+        if self.parent.frame_counter - 1 >= 0:
+            self.parent.frame_counter -= 1
             self.parent.calc_frame()
 
     # stop playing
