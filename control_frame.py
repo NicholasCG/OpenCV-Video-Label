@@ -113,9 +113,9 @@ class TkControlFrame(tk.Frame):
             if new_frame_available:
 
                 self.parent.prev_frame = new_frame
-                self.parent.cur_frame = self.parent.prev_frame
+                self.parent.cur_image = self.parent.prev_frame
 
-                self.parent.frame = Image.fromarray(self.parent.cur_frame)
+                self.parent.frame = Image.fromarray(self.parent.cur_image)
                 self.parent.frame = ImageTk.PhotoImage(image=self.parent.frame)
 
                 self.parent.video_frame.frame_image["image"] = self.parent.frame

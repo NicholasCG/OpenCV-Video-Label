@@ -25,7 +25,7 @@ GUI_BG = GUI_WHITE
 GUI_SHADOW = GUI_GRAYL
 
 # determines once how many frames an image is added to the dataset
-STORE_N = 10
+STORE_N = 5
 
 # file settings:
 DATASET_PATH = "/dataset"

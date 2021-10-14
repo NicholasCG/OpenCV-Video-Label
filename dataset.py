@@ -61,14 +61,22 @@ class Dataset:
 
         # dictionary to prevent errors caused by changing dictionary while exporting
         copy_dict = self.dataset_dict.copy()
-        for object_class in copy_dict.keys():
-            sub_dir = directory + "/" + object_class
-            if not os.path.exists(sub_dir):
-                os.makedirs(sub_dir)
 
+        index = {}
+        images = {}
+        for object_class in copy_dict.keys():
             # copy to prevent changing dictionary errors while exporting and tracking at the same time
             for image_object in copy_dict[object_class]:
-                filename = sub_dir + "/" + str(object_class) + "_" + str(image_object.image_id) + ".jpg"
+                # filename = sub_dir + "/" + str(object_class) + "_" + str(image_object.image_id) + ".jpg"
+                if image_object.image_name not in index:
+                    index[image_object.image_name] = 0
+                    images[image_object.image_name] = []
+                filename = os.path.join(directory, 
+                                        image_object.image_name + 
+                                        "image" + 
+                                        str(index[image_object.image_name]) + 
+                                        ".png")
+                
 
                 # if export cropped images
                 if self.export_setting == 0:
@@ -80,7 +88,14 @@ class Dataset:
                 # if exporting full images with single csv file holding roi data
                 else:
                     cv2.imwrite(filename, image_object.export_image[..., ::-1])
-                    self.create_csv_entry(image_object, directory)
+                    images[image_object.image_name].append((image_object, directory, index[image_object.image_name]))
+                    # self.create_csv_entry(image_object, directory, index[image_object.image_name])
+                    index[image_object.image_name] += 1
+        
+        if self.export_setting > 1:
+            for image in images:
+                for im_object in images[image]:
+                    self.create_csv_entry(im_object[0], im_object[1], im_object[2])
 
         self.root.status_bar.set("Successfully exported dataset.")
 
@@ -95,7 +110,7 @@ class Dataset:
         return reparsed.toprettyxml(indent="\t")
 
     @staticmethod
-    def create_csv_entry(image, directory):
+    def create_csv_entry(image, directory, index):
         headers = ['Filename', 
                     'Annotation tag', 
                     'Upper left corner X', 
@@ -108,13 +123,14 @@ class Dataset:
                     "Origin frame number",
                     "Origin track",
                     "Origin track frame number"]
-        filename = directory + directory.split("/")[-2] + ".csv"
+        # filename = directory + directory.split("/")[-2] + ".csv"
+        filename = os.path.join(directory, "frameAnnotations.csv")
         file_exists = os.path.isfile(filename)
         with open(filename, 'a', newline='') as outfile:
             writer = csv.writer(outfile)
             if not file_exists:
                 writer.writerow(headers)
-            item = [image.image_name + ".jpg", 
+            item = [image.image_name + "image" + str(index) + ".png", 
                     image.image_class, 
                     image.tl_x, 
                     image.tl_y, 
@@ -122,8 +138,8 @@ class Dataset:
                     image.br_y,
                     "Manually add",
                     "Manually add",
-                    "Manually add",
-                    "Manually add",
+                    image.origin,
+                    image.origin_frame,
                     image.source,
                     image.frame]
 
@@ -188,10 +204,17 @@ class DatasetImage:
         self.image_id = image_id
         self.image_class = image_class
         self.tl_x, self.tl_y, self.br_x, self.br_y = tl_x, tl_y, br_x, br_y
-        self.frame = frame
+        self.frame = frame - 1
         self.source = source
 
-        self.image_name = self.image_class + "_" + str(self.image_id)
+        source_split = source.split("-start")
+        file_type = source_split[1].split('.')[1]
+
+        self.origin = "-".join(source_split[0].split('-')[:-1]) + "." + file_type
+        self.origin_frame = int(source_split[1].split('.')[0]) + self.frame
+        
+        self.image_name = source + "_"
+        
         self.export_image = image.copy()
         self.cropped_roi = None
         self.preview_image = None

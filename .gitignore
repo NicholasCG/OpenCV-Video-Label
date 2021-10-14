@@ -24,3 +24,5 @@ var/
 
 # Other unnecessary files
 *.mp4
+
+*_dataset/

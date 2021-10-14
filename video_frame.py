@@ -1,5 +1,6 @@
 import cv2
 import tkinter as tk
+import tkinter.simpledialog
 import numpy as np
 from PIL import Image, ImageTk
 from constants import VIDEO_BACKGROUND_IMG, VIDEO_H, VIDEO_W, VIDEO_PATH, GUI_RED
@@ -74,7 +75,7 @@ class TkVideoFrame:
             object_name = tk.simpledialog.askstring(title = "Object name", 
                                                 prompt = "New object name: ", 
                                                 parent = self.root, 
-                                                initialvalue = "default_class")
+                                                initialvalue = "default")
 
             # Decide not to track
             if object_name == None:
@@ -241,6 +242,17 @@ def redraw_frame(parent):
                                                     tl_x, tl_y, br_x, br_y, 
                                                     parent.frame_counter,
                                                     parent.video.source)
+            # # Create pure version of the image w/o other ROIs drawn on top (fixing bug).
+            # pure_data_image = dataset.DatasetImage(self.pure_image[:, :, ::1],
+            #                                     self.max_image_count,
+            #                                     obj,
+            #                                     tl_x, tl_y, br_x, br_y, 
+            #                                     self.frame_counter,
+            #                                     self.video.source)
+            successful_cropping = dataset_image.crop_and_pad_roi()
+            if successful_cropping:
+                parent.dataset.add_image(dataset_image)
+                parent.max_image_count += 1
 
             dataset_image.draw_roi()
 
@@ -254,7 +266,7 @@ def redraw_frame(parent):
     parent.video_frame.frame_image.photo = parent.frame
 
 # Popup for removing an object being tracked. Will use a combobox.
-class RemoveDialog(tk.simpledialog.Dialog):
+class RemoveDialog(tkinter.simpledialog.Dialog):
     def __init__(self, parent, title):
         # MainWindow parent and Tk parent are separated
         # because I need the current object list that
