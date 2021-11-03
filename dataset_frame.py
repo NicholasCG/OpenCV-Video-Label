@@ -211,6 +211,7 @@ class TkDatasetFrame:
         ipad = 2
         row_num = 0
         col_num = 0
+        self.current_page = 0
 
         # calculate the number of images that fit a row given the current screen width,
         # and how many images can fit on screen.
