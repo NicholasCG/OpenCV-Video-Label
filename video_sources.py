@@ -22,7 +22,7 @@ class VideoStream:
     def init(self):
         dir_path = os.path.dirname(os.path.realpath(__file__)) + "/video"
         filename = filedialog.askopenfilename(title='Open a video', initialdir=dir_path)
-        filetype = filename.split(".")[-1]
+        filetype = filename.split(".")[-1].lower()
         if filename:
             if filetype in SUPPORTED_FILES:
                 self.source = os.path.split(filename)[-1]

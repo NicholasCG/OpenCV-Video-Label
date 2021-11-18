@@ -26,3 +26,4 @@ var/
 *.mp4
 
 *_dataset/
+collectedVideos/
