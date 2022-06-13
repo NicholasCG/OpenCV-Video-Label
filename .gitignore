@@ -27,4 +27,5 @@ var/
 
 *_dataset/
 collectedVideos/
+dataset/
 test/
